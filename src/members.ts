@@ -19,3 +19,10 @@ export interface CurrentHost {
     image: string;
     nickName: string;
 }
+
+export interface RecommendHost {
+    start: string;
+    end: string;
+    image: string;
+    nickName: string;
+}

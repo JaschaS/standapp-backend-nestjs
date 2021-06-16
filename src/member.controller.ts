@@ -2,7 +2,7 @@ import { Delete, Param, Post } from '@nestjs/common';
 import { Body } from '@nestjs/common';
 import { Controller, Get, Patch } from '@nestjs/common';
 import { MemberService } from './member.service';
-import { CurrentHost, Member, Members } from './members';
+import { CurrentHost, Member, Members, RecommendHost } from './members';
 
 @Controller('/standup/v1')
 export class MemberController {
@@ -14,12 +14,12 @@ export class MemberController {
   }
 
   @Get('current')
-  getCurrentHost(): Member {
+  getCurrentHost(): RecommendHost {
       return this.memberService.getCurrentHost();
   }
 
   @Get('recommend')
-  getRecommendation(): Member {
+  getRecommendation(): RecommendHost {
       return this.memberService.recomendHost();
   }
 
@@ -29,7 +29,7 @@ export class MemberController {
   }
 
   @Post('host')
-  saveHost(@Body() newHost: Member): CurrentHost {
+  saveHost(@Body() newHost: RecommendHost): RecommendHost {
       return this.memberService.saveHost(newHost);
   }
 

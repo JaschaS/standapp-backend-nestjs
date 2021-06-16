@@ -1,23 +1,28 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CurrentHost, Member, MemberHistory, Members } from './members';
+import { CurrentHost, Member, MemberHistory, Members, RecommendHost } from './members';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class MemberService {
   
   members: Members = { members: [
+    {
+      key: uuidv4(),
+      nickName: "Andreas",
+      image: "images/Avatar01-1.png"
+    }
   ]};
-  currentHost: CurrentHost = {start: "", nickName: "", image: ""};
+  currentHost: RecommendHost = {start: "15-6-2021", nickName: "Andreas", image: "images/Avatar01-1.png", end: "18-6-2021"};
   history: MemberHistory[] = [
     {
-      start: "",
-      end: "",
-      nickName: ""
+      start: "15-6-2021",
+      end: "18-6-2021",
+      nickName: "Andreas"
     }
   ];
 
-  getCurrentHost(): Member {
-    return {key: "", nickName: this.currentHost.nickName, image: this.currentHost.image};
+  getCurrentHost(): RecommendHost {
+    return this.currentHost;
   }
 
   getMembers(): Members {
@@ -68,7 +73,7 @@ export class MemberService {
     return this.members;
   }
 
-  recomendHost(): Member {
+  recomendHost(): RecommendHost {
     function getRandomInt(max: number) {
       return Math.floor(Math.random() * max);
     }
@@ -77,10 +82,20 @@ export class MemberService {
 
     console.log("recommendation " + this.members.members[index]);
 
-    return this.members.members[index];
+    const timeSplit = this.currentHost.end.split('-');
+
+    const currentHostEnd = new Date(new Date(+timeSplit[2], +timeSplit[1]-1, +timeSplit[0]+1));
+    const currentDate = new Date(currentHostEnd.getTime() + (2 * 24 * 60 * 60 * 1000));
+    const endDate = new Date(currentDate.getTime() + (4 * 24 * 60 * 60 * 1000));
+
+    return {
+      start: currentDate.getDate() + "-" + (currentDate.getMonth()+1) + "-" +  currentDate.getFullYear(),
+      end: endDate.getDate() + "-" + (endDate.getMonth()+1) + "-" +  endDate.getFullYear(),
+      ...this.members.members[index]
+    };
   }
 
-  saveHost(newHost: Member): CurrentHost {
+  saveHost(newHost: RecommendHost): RecommendHost {
 
     const result = this.members.members.filter(member => member.nickName === newHost.nickName)
 
@@ -89,23 +104,19 @@ export class MemberService {
       throw new NotFoundException("Couldn't find member with given name");
     }
 
-    const currentDate = new Date();
-    const startDate = currentDate.getDate() + "-" + currentDate.getMonth() + "-" +  currentDate.getFullYear();
-
     const historyResult = this.history.filter(e => e.nickName === this.currentHost.nickName);
 
     if(historyResult.length == 0) {
-      this.history.push({nickName: this.currentHost.nickName, start: this.currentHost.start, end: startDate});
-    } else {
-      historyResult[0].end = startDate;
+      this.history.push({nickName: this.currentHost.nickName, start: this.currentHost.start, end: this.currentHost.end});
     }
 
     this.currentHost = {
       nickName: newHost.nickName,
-      start: startDate,
+      start: newHost.start,
+      end: newHost.end,
       image: result[0].image
     };
-    this.history.push({nickName: this.currentHost.nickName, start: startDate, end: ""});
+    this.history.push({nickName: this.currentHost.nickName, start: this.currentHost.start, end: this.currentHost.end});
 
     return this.currentHost;
   }
